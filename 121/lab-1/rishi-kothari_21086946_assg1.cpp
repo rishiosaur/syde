@@ -27,22 +27,100 @@ int a_goals, a_shots_on_target, a_shots_off_target, a_missed, a_saved, a_blocked
 
 int b_goals, b_shots_on_target, b_shots_off_target, b_missed, b_saved, b_blocked, b_fouls, b_yellow, b_red;
 
-// Assignment utils
-void increment_team(string team, int &a_state, int &b_state)
-{
-	if (team == "A")
-	{
-		a_state++;
-	}
-	else
-	{
-		b_state++;
-	}
-}
+// Assignment Utils
+void increment_team(string team, int &a_state, int &b_state);
 
 /*
 
 utilities
+
+*/
+
+int random_val(int lower_bound, int upper_bound);
+
+string opposing_team(string team);
+
+void log_state();
+void log_divider();
+void log_subdivider();
+
+/*
+sub-events
+*/
+void goal_sub_event(int options, string shot_team);
+void card_sub_event(string foul_team);
+
+/*
+
+events
+
+*/
+
+void shot_event(string shot_team);
+void foul_event(string penalized_team, string awarded_team);
+void penalty_event(string penalized_team, string awarded_team);
+
+/*
+running
+
+*/
+
+void run_event();
+void run_half(int events, string prefix);
+
+int main()
+{
+	srand(time(NULL));					// Initialize seed for srand
+	float num_events = 1 + rand() % 30; // Float because we need to divide into two
+	cout << "🏟️ ⚽ WARRIOR FIELD, circa. 1980s ⚽🏟️" << endl;
+	cout << "WATERLOO️ WARRIORS (A) 🆚 TORONTO VARSITY BLUES (B)" << endl;
+	log_divider();
+	cout << num_events << " events to be simulated" << endl;
+
+	// Split halves:
+	int half1 = floor(num_events / 2);
+	int half2 = ceil(num_events / 2);
+
+	cout << "1️⃣ First half: " << half1 << " events" << endl;
+	cout << "2️⃣ Second half: " << half2 << " events" << endl;
+
+	log_divider();
+
+	srand(time(NULL)); // Initialize seed for srand
+	run_half(half1, "FIRST");
+	srand(time(NULL)); // Initialize seed for srand
+	run_half(half2, "SECOND");
+
+	// Final stats
+	// Log out winning team and score
+	if (a_goals > b_goals)
+	{
+		cout << "🏆 Waterloo Warriors (A) win by " << a_goals - b_goals << " goals." << endl;
+	}
+	else if (b_goals > a_goals)
+	{
+		cout << "🏆 Toronto Varsity Blues (B) win by " << b_goals - a_goals << " goals." << endl;
+	}
+	else
+	{
+		cout << "🏆 The game ends in a draw." << endl;
+	}
+
+	// Log out final score
+	cout << "🏁 FINAL SCORE: A scored " << a_goals << " to B's " << b_goals << endl;
+
+	return 0;
+}
+
+/*
+
+
+===
+
+DECLARATIONS
+
+===
+
 
 */
 
@@ -263,48 +341,4 @@ void run_half(int events, string prefix)
 	cout << "🏁 HALF COMPLETE 🏁" << endl;
 	log_state();
 	log_divider();
-}
-
-int main()
-{
-	srand(time(NULL));					// Initialize seed for srand
-	float num_events = 1 + rand() % 30; // Float because we need to divide into two
-	cout << "🏟️ ⚽ WARRIOR FIELD, circa. 1980s ⚽🏟️" << endl;
-	cout << "WATERLOO️ WARRIORS (A) 🆚 TORONTO VARSITY BLUES (B)" << endl;
-	log_divider();
-	cout << num_events << " events to be simulated" << endl;
-
-	// Split halves:
-	int half1 = floor(num_events / 2);
-	int half2 = ceil(num_events / 2);
-
-	cout << "1️⃣ First half: " << half1 << " events" << endl;
-	cout << "2️⃣ Second half: " << half2 << " events" << endl;
-
-	log_divider();
-
-	srand(time(NULL)); // Initialize seed for srand
-	run_half(half1, "FIRST");
-	srand(time(NULL)); // Initialize seed for srand
-	run_half(half2, "SECOND");
-
-	// Final stats
-	// Log out winning team and score
-	if (a_goals > b_goals)
-	{
-		cout << "🏆 Waterloo Warriors (A) win by " << a_goals - b_goals << " goals." << endl;
-	}
-	else if (b_goals > a_goals)
-	{
-		cout << "🏆 Toronto Varsity Blues (B) win by " << b_goals - a_goals << " goals." << endl;
-	}
-	else
-	{
-		cout << "🏆 The game ends in a draw." << endl;
-	}
-
-	// Log out final score
-	cout << "🏁 FINAL SCORE: A scored " << a_goals << " to B's " << b_goals << endl;
-
-	return 0;
 }
