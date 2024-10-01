@@ -18,12 +18,14 @@ using namespace std;
 
 assignment & state
 
+tracking: goals scored, shots taken, shot on goal, shots saved, shots off goal, shots blocked
+
 */
 
 // State
-int a_goals, a_shots, a_missed, a_saved, a_blocked, a_fouls, a_yellow, a_red;
+int a_goals, a_shots_on_target, a_shots_off_target, a_missed, a_saved, a_blocked, a_fouls, a_yellow, a_red;
 
-int b_goals, b_shots, b_missed, b_saved, b_blocked, b_fouls, b_yellow, b_red;
+int b_goals, b_shots_on_target, b_shots_off_target, b_missed, b_saved, b_blocked, b_fouls, b_yellow, b_red;
 
 // Assignment utils
 void increment_team(string team, int &a_state, int &b_state)
@@ -66,8 +68,8 @@ void log_state()
 	cout << "📊 GAME STATS 📊" << endl;
 
 	// Log out summary
-	cout << "✅ A has scored " << a_goals << " goals with " << a_shots << " shots-" << b_saved + b_blocked << " shots were blocked, with " << a_missed << " goals missing the net entirely" << endl;
-	cout << "✅ B has scored " << b_goals << " goals with " << b_shots << " shots-" << a_saved + a_blocked << " shots were blocked, with " << b_missed << " goals missing the net entirely" << endl;
+	cout << "✅ A has scored " << a_goals << " goals with " << a_shots_on_target << " shots on goal & " << a_shots_off_target << " shots off goal - " << b_saved + b_blocked << " shots were blocked, with " << a_missed << " goals missing the net entirely" << endl;
+	cout << "✅ B has scored " << b_goals << " goals with " << b_shots_on_target << " shots on goal & " << b_shots_off_target << " shots off goal - " << a_saved + a_blocked << " shots were blocked, with " << b_missed << " goals missing the net entirely" << endl;
 	cout << endl;
 
 	// Log out general stats
@@ -114,26 +116,33 @@ sub-events
 void goal_sub_event(int options, string shot_team)
 {
 	int scored = random_val(0, options);
-	increment_team(shot_team, a_shots, b_shots);
+	// increment_team(shot_team, a_shots, b_shots);
 	switch (scored)
 	{
 	case 0:
 		// Team scored
+		increment_team(shot_team, a_shots_on_target, b_shots_on_target);
 		increment_team(shot_team, a_goals, b_goals);
 		cout << "↳ ✅ " << shot_team << " scores!" << endl;
 		break;
 	case 1:
 		// Saved by opposing goalkeeper
+
+		increment_team(shot_team, a_shots_on_target, b_shots_on_target);
 		increment_team(opposing_team(shot_team), a_saved, b_saved);
 		cout << "↳ ⛔ " << opposing_team(shot_team) << "'s goalkeeper or defenders just saved the shot!" << endl;
 		break;
 	case 2:
 		// Missed goal
+
+		increment_team(shot_team, a_shots_off_target, b_shots_off_target);
 		increment_team(shot_team, a_missed, b_missed);
 		cout << "↳ ❌ " << shot_team << " misses the goal!" << endl;
 		break;
 	case 3:
 		// Blocked by player
+
+		increment_team(shot_team, a_shots_on_target, b_shots_on_target);
 		increment_team(opposing_team(shot_team), a_blocked, b_blocked);
 		cout << "↳ 💨 " << opposing_team(shot_team) << "'s players just saved the shot!" << endl;
 		break;
