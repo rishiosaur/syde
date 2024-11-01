@@ -32,19 +32,27 @@ def calculate_shadow_length(object_height, solar_altitude):
     return shadow_length
 
 
+def calculate_attachment_height(theta, altitude):
+    return (math.sin(math.radians(altitude) - math.radians(theta)) * 5.5) / (
+        math.sin(math.pi / 2 - math.radians(altitude))
+    )
+
+
 def design_pyramid_projection(base_width, height, latitude, longitude):
     """
     Calculate projection dimensions for summer solstice shadows
     """
     # Get summer solstice date for current year
     year = datetime.now().year
-    solstice_date = ephem.next_summer_solstice(str(year))
+    solstice_date = ephem.next_summer_solstice(ephem.now())
+    theta = math.atan(3)
 
     # Calculate solar positions throughout solstice day
     times = []
     altitudes = []
     azimuths = []
     shadow_lengths = []
+    attachment_heights = []
 
     for hour in range(24):
         for minute in range(0, 60, 15):  # Check every 15 minutes
@@ -56,19 +64,35 @@ def design_pyramid_projection(base_width, height, latitude, longitude):
                 altitudes.append(alt)
                 azimuths.append(az)
                 shadow_lengths.append(calculate_shadow_length(height, alt))
+                attachment_heights.append(calculate_attachment_height(theta, alt))
 
     # Calculate projection dimensions
     min_shadow = min(shadow_lengths)
     max_shadow = max(shadow_lengths)
+    midday_alt, midday_az = calculate_solar_position(
+        latitude, longitude, ephem.Date(solstice_date) + 12 * ephem.hour
+    )
+
+    midday_attachment = calculate_attachment_height(
+        theta,
+        calculate_solar_position(
+            latitude, longitude, ephem.Date(solstice_date) + 12 * ephem.hour
+        )[0],
+    )
 
     return {
         "min_shadow_length": min_shadow,
         "max_shadow_length": max_shadow,
+        "min_attachment_height": min(attachment_heights),
+        "max_attachment_height": max(attachment_heights),
         "projection_length": max_shadow - min_shadow,
         "recommended_projection_depth": (max_shadow - min_shadow)
         * 0.1,  # 10% of shadow difference
         "solar_altitude_range": (min(altitudes), max(altitudes)),
         "solar_azimuth_range": (min(azimuths), max(azimuths)),
+        "midday_attachment_height": midday_attachment,
+        "midday_azimuth": midday_az,
+        "midday_altitude": midday_alt,
     }
 
 
@@ -80,47 +104,6 @@ if __name__ == "__main__":
 
     results = design_pyramid_projection(BASE_WIDTH, PYRAMID_HEIGHT, LATITUDE, LONGITUDE)
     print("Pyramid Projection Design Parameters:")
-
-    observer = ephem.Observer()
-    observer.lat = str(LATITUDE)
-    observer.lon = str(LONGITUDE)
-    observer.date = ephem.Date("2025/6/20") + ephem.hour * 12
-
-    print(ephem.to_timezone(observer.date, ephem.UTC))
-
-    sun = ephem.Sun()
-    sun.compute(observer)
-
-    # Convert to degrees from radians
-    altitude = math.degrees(float(sun.alt))
-    azimuth = math.degrees(float(sun.az))
-
-    # print(f"Sun's altitude: {altitude}")
-    # print(f"Sun's azimuth: {azimuth}")
-    # arctan
-    theta = math.atan(3)
-
-    # Dimensioning
-    # pyramid_azimuth = 30
-    temp_azimuth = 132.49
-    temp_elevation = 63.57
-
-    pyramid_azimuth = 180
-    relative_azimuth = abs(pyramid_azimuth - temp_azimuth)
-    altitude_rad = math.radians(temp_elevation)
-    relative_azimuth_rad = math.radians(temp_azimuth)
-    theta_rad = math.radians(theta)
-
-    attachment_height = (
-        math.sin(math.radians(temp_elevation) - math.radians(theta)) * 5.5
-    ) / (math.sin(90 - math.radians(temp_elevation)))
-
-    # attachment_height = (
-    #     (5.5 * math.sin(altitude) * math.cos(relative_azimuth))
-    #     / (7.5 / math.sqrt(2.5**2 + 7.5**2))
-    # ) - 7.5
-
-    print(f"Attachment height: {attachment_height}")
 
     for key, value in results.items():
         print(f"{key}: {value}")
